@@ -1,0 +1,23 @@
+{{>header}}
+
+<div style="max-width: 700px; margin: 40px auto; font-family: sans-serif;">
+    <h2 style="text-align: center;">💬 댓글 수정</h2>
+
+    <form action="/comments/{{comment.id}}/edit" method="post"
+          style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
+        <textarea name="content" rows="5" required
+                  style="padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px;">{{comment.content}}</textarea>
+
+        <button type="submit"
+                style="padding: 12px; background-color: #2ecc71; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer;">
+            수정 완료
+        </button>
+
+        <a href="/community/{{postId}}"
+           style="text-align: center; margin-top: 10px; color: #2980b9; text-decoration: none;">
+            ← 돌아가기
+        </a>
+    </form>
+</div>
+
+{{>footer}}

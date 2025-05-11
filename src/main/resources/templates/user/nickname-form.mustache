@@ -1,0 +1,23 @@
+{{>header}}
+
+<div style="max-width: 600px; margin: 40px auto; text-align: center;">
+    <h2>📝 {{title}}</h2>
+    <form method="post" action="/nickname">
+        {{#csrfParameterName}}
+            <input type="hidden" name="{{csrfParameterName}}" value="{{csrfToken}}">
+        {{/csrfParameterName}}
+
+        {{#nickname}}
+            <input type="text" name="nickname" placeholder="닉네임 입력" value="{{nickname}}" style="width: 80%; padding: 10px; margin-bottom: 20px;">
+        {{/nickname}}
+
+        {{^nickname}}
+            <input type="text" name="nickname" placeholder="닉네임 입력" style="width: 80%; padding: 10px; margin-bottom: 20px;">
+        {{/nickname}}
+
+        <br>
+        <button type="submit" style="padding: 10px 20px;">저장</button>
+    </form>
+</div>
+
+{{>footer}}

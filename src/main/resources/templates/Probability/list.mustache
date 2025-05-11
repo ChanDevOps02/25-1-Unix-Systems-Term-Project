@@ -1,0 +1,28 @@
+{{>header}}
+
+<div style="max-width: 800px; margin: 40px auto; font-family: sans-serif;">
+    <h2 style="text-align: center;">📘 Probability and Random Variables 단원 목록</h2>
+
+    <div style="text-align: right; margin-bottom: 20px;">
+        <a href="/subjects/probability/new" style="background: #3498db; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none;">
+            ➕ 단원 추가
+        </a>
+    </div>
+
+    {{#chapters}}
+        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+            <h3 style="margin: 0;">
+                <a href="/subjects/probability/{{id}}" style="color: #2980b9; text-decoration: none;">
+                    {{title}}
+                </a>
+            </h3>
+            <p style="color: #777;">작성일: {{createdAt}}</p>
+        </div>
+    {{/chapters}}
+
+    {{^chapters}}
+        <p style="text-align: center; color: #999;">등록된 단원이 없습니다.</p>
+    {{/chapters}}
+</div>
+
+{{>footer}}

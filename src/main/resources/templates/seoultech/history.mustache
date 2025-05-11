@@ -1,0 +1,21 @@
+{{>header}}
+
+<div style="text-align:center; padding:20px; color:white; background:#1e1e1e;">
+    <h2>📜 명령어 실행 기록</h2>
+
+    {{#historyList}}
+        <div style="background:#000; padding:10px; margin:10px 0; border-radius:6px;">
+            <p><strong style="color:#0f0;">$ {{command}}</strong></p>
+            <pre style="background:#1e1e1e; padding:10px; border-radius:4px; color:#fff;">{{result}}</pre>
+            <p style="font-size:12px; color:#888;">{{timestamp}}</p>
+        </div>
+    {{/historyList}}
+
+    {{^historyList}}
+        <p>실행한 명령어가 없습니다.</p>
+    {{/historyList}}
+
+    <a href="/kmcplace/command" style="color:#0f0;">🔙 명령어 실행 페이지로</a>
+</div>
+
+{{>footer}}

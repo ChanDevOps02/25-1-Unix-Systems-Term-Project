@@ -1,0 +1,32 @@
+{{>header}}
+
+<div style="display:flex; justify-content:center; align-items:center; height:100vh; background-color:#f4f7f8;">
+    <div style="background:white; padding:40px; border-radius:12px; box-shadow:0px 5px 15px rgba(0, 0, 0, 0.2); width:360px; text-align:center;">
+        <h2 style="color:#333; margin-bottom:20px;">로그인</h2>
+
+        {{#error}}
+            <p style="color:red; font-size:14px; background:#ffe6e6; padding:8px; border-radius:6px;">
+                아이디 또는 비밀번호가 잘못되었습니다.
+            </p>
+        {{/error}}
+
+        <form action="/login" method="post" style="display:flex; flex-direction:column; gap:12px;">
+            <input type="text" name="username" placeholder="아이디" required
+                   style="width:100%; padding:12px; font-size:16px; border:1px solid #ccc; border-radius:6px; background:#f9f9f9;">
+
+            <input type="password" name="password" placeholder="비밀번호" required
+                   style="width:100%; padding:12px; font-size:16px; border:1px solid #ccc; border-radius:6px; background:#f9f9f9;">
+
+            <button type="submit"
+                    style="width:100%; padding:12px; font-size:18px; font-weight:bold; background:#3498DB; color:white; border:none; border-radius:6px; cursor:pointer; transition:0.3s;">
+                로그인
+            </button>
+        </form>
+
+        <p style="margin-top:15px; font-size:14px;">
+            아직 계정이 없나요? <a href="/kmcplace/newUser" style="color:#3498DB; font-weight:bold;">회원가입</a>
+        </p>
+    </div>
+</div>
+
+{{>footer}}

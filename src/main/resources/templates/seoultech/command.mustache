@@ -1,0 +1,197 @@
+{{>header}}
+
+<div style="display:flex; justify-content:center; align-items:flex-start; padding-top:40px;">
+    <div style="background:black; padding:20px; border-radius:10px; box-shadow:0px 0px 10px rgba(0, 0, 0, 0.1); width:600px; color:white; font-family:monospace;">
+        <h2 style="text-align:center;">💻 UNIX 명령어 실행</h2>
+
+        <form id="command-form">
+            <input type="text" id="command" name="command" placeholder="명령어 입력 후 Enter"
+                   list="command-suggestions"
+                   style="width:100%; padding:10px; border:1px solid #ccc; border-radius:5px; background:#222; color:#0f0; font-weight:bold;">
+            <datalist id="command-suggestions"></datalist>
+        </form>
+
+        <!-- ✅ 추천 명령어 표시 -->
+        <div id="suggestion-box" style="margin-top:10px; color: #aaa;"></div>
+
+        <!-- ✅ 실행 기록 초기화 버튼 -->
+        <button id="clear-history" style="margin-top:10px; background:red; color:white; border:none; padding:5px 10px; cursor:pointer;">
+            🗑 실행 기록 초기화
+        </button>
+
+        <div id="output" style="background:#111; padding:10px; margin-top:10px; border-radius:5px; height:400px; overflow-y:auto;">
+            {{#historyList}}
+                <p class="command-text">$ {{command}}</p>
+                <pre class="command-output">{{result}}</pre>
+            {{/historyList}}
+        </div>
+
+        <!-- ✅ 디스크 사용량 그래프 -->
+        <canvas id="disk-usage-chart"
+                style="width: 100%; max-width: 400px; max-height: 200px; background:#222; border-radius:5px; padding:10px; display: none;">
+        </canvas>
+    </div>
+</div>
+
+{{>footer}}
+
+<style>
+    .command-text { color: #0f0; font-weight: bold; }
+    .command-output { color: white; white-space: pre-wrap; word-wrap: break-word; }
+    .directory { color: #00f; font-weight: bold; } /* ✅ 디렉토리는 파란색 */
+    .file { color: #fff; } /* ✅ 일반 파일은 흰색 */
+    .error { color: red; font-weight: bold; } /* ✅ 오류 메시지는 빨간색 */
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // ✅ 명령어 추천 리스트
+    const commandRecommendations = {
+        "ls": ["ls -l (더 자세한 정보 보기)", "du -sh * (각 파일의 용량 확인)"],
+        "cd": ["cd .. (상위 디렉토리 이동)", "cd /var/log (로그 폴더 이동)"],
+        "rm": ["rm -rf (강제 삭제)", "trash-put (macOS에서 안전 삭제)"],
+        "chmod": ["chmod 755 (파일 실행 권한 부여)", "chmod -R 777 (폴더 권한 변경)"],
+        "df": ["df -h (디스크 사용량 확인)", "du -sh * (폴더별 용량 확인)"]
+    };
+
+    document.getElementById("command").addEventListener("input", function () {
+        let input = this.value.trim();
+        let suggestionBox = document.getElementById("suggestion-box");
+
+        if (commandRecommendations[input]) {
+            suggestionBox.innerHTML = "<strong>🔹 추천:</strong> " + commandRecommendations[input].join(" | ");
+        } else {
+            suggestionBox.innerHTML = "";
+        }
+    });
+
+    // ✅ 실행 기록 초기화 기능 (서버 & UI 동기화)
+    document.getElementById("clear-history").onclick = async function () {
+        try {
+            let response = await fetch("/seoultechUnix/command/clear", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" }
+            });
+
+            if (!response.ok) throw new Error("❌ 서버 응답 오류: " + response.status);
+
+            let result = await response.text();
+            alert(result); // ✅ 초기화 성공 메시지
+
+            // ✅ UI에서도 실행 기록 삭제
+            document.getElementById("output").innerHTML = "";
+            // ✅ 디스크 사용량 그래프 숨기기
+            document.getElementById("disk-usage-chart").style.display = "none";
+            console.log("✅ 클라이언트 UI에서 실행 기록 초기화 완료!");
+
+        } catch (error) {
+            console.error("❌ 실행 기록 초기화 중 오류 발생:", error);
+            alert("❌ 실행 기록 초기화 실패!");
+        }
+    };
+
+    // ✅ 명령어 실행 처리
+    // ✅ 명령어 실행 처리
+    // ✅ 명령어 실행 처리
+    document.getElementById("command-form").onsubmit = async function(event) {
+        event.preventDefault();
+        let commandInput = document.getElementById("command");
+        let command = commandInput.value.trim();
+        if (!command) return;
+
+        let outputDiv = document.getElementById("output");
+
+        // ✅ 사용자가 입력한 명령어 추가
+        let newCommand = document.createElement("p");
+        newCommand.className = "command-text";
+        newCommand.innerHTML = "$ " + command;
+        outputDiv.appendChild(newCommand);
+
+        try {
+            let response = await fetch("/kmcplace/command/execute", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: "command=" + encodeURIComponent(command),
+                cache: "no-cache"
+            });
+
+            if (!response.ok) throw new Error(`❌ 서버 응답 오류: ${response.status} ${response.statusText}`);
+
+            let result = await response.json();
+            console.log("📌 서버 응답 원본:", result);
+
+            // ✅ 🔥 colorizeOutput 적용
+            let pre = document.createElement("pre");
+            pre.className = "command-output";
+            pre.innerHTML = colorizeOutput(result.join("\n")); // ✅ 색상 적용
+            outputDiv.appendChild(pre);
+
+            // ✅ df -h 실행 시 그래프 표시
+            if (command === "df -h") {
+                drawDiskUsageGraph(result);
+            }
+
+            outputDiv.scrollTop = outputDiv.scrollHeight;
+
+        } catch (error) {
+            console.error("❌ 오류 발생:", error);
+            let errorMessage = document.createElement("p");
+            errorMessage.className = "command-output error";
+            errorMessage.textContent = "❌ 명령어 실행 중 오류가 발생했습니다.";
+            outputDiv.appendChild(errorMessage);
+        }
+
+        commandInput.value = "";
+    };
+
+    // ✅ 디스크 사용량 그래프 생성 함수
+    function drawDiskUsageGraph(dfOutput) {
+        let labels = [];
+        let usedData = [];
+        let freeData = [];
+
+        dfOutput.forEach(line => {
+            let parts = line.split(/\s+/);
+            if (parts.length >= 6 && parts[0].startsWith("/dev/")) {
+                labels.push(parts[0]);  // ✅ 디스크 이름
+                usedData.push(parseFloat(parts[2].replace("G", ""))); // ✅ 사용된 공간
+                freeData.push(parseFloat(parts[3].replace("G", ""))); // ✅ 남은 공간
+            }
+        });
+
+        let ctx = document.getElementById("disk-usage-chart").getContext("2d");
+        document.getElementById("disk-usage-chart").style.display = "block";
+
+        new Chart(ctx, {
+            type: "bar",
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: "사용된 공간 (GB)", data: usedData, backgroundColor: "red" },
+                    { label: "남은 공간 (GB)", data: freeData, backgroundColor: "green" }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false, aspectRatio: 2 }
+        });
+    }
+    // ✅ 🔥 명령어 실행 결과 색상 적용 (디렉토리/파일/오류 구분)
+    function colorizeOutput(output) {
+        return output
+                .split("\n") // 줄 단위로 나눔
+                .map(line => {
+                    if (/^d[\w-]+@?\s+/.test(line)) {
+                        return `<span class="directory">${line}</span>`; // ✅ 디렉토리 (파란색)
+                    }
+                    if (/^-[rwxsStT-]+@?\s+/.test(line)) {
+                        return `<span class="file">${line}</span>`; // ✅ 파일 (흰색)
+                    }
+                    if (/(error|not found|denied|No such file or directory)/gi.test(line)) {
+                        return `<span class="error">${line}</span>`; // ✅ 오류 메시지 (빨간색)
+                    }
+                    return line; // ✅ 나머지는 그대로 유지
+                })
+                .join("<br>"); // ✅ 줄바꿈을 <br> 태그로 변환하여 유지
+    }
+
+</script>
